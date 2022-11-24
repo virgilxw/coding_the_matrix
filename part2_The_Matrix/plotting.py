@@ -46,8 +46,7 @@ def plot(L, scale=4, dot_size = 3, browser=None):
             h.writelines(['<circle cx="%d" cy="%d" r="%d" fill="red"/>\n'
                           % (origin[0]+scalar*x,origin[1]-scalar*y,dot_size)])
         h.writelines(['</svg>\n</body>\n</html>'])
-
-    return print("plot generated at {}".format(hpath))
+    print(hpath)
 
 def setbrowser(browser=None):
     """ Registers the given browser and saves it as the module default.
