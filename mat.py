@@ -27,7 +27,7 @@ def equal(A, B):
     to access entries of the input matrices.  This avoids some sparsity bugs.
 
     >>> Mat(({'a','b'}, {'A','B'}), {('a','B'):0}) == Mat(({'a','b'}, {'A','B'}), {('b','B'):0})
-    True
+    Trues
     >>> A = Mat(({'a','b'}, {'A','B'}), {('a','B'):2, ('b','A'):1})
     >>> B = Mat(({'a','b'}, {'A','B'}), {('a','B'):2, ('b','A'):1, ('b','B'):0})
     >>> C = Mat(({'a','b'}, {'A','B'}), {('a','B'):2, ('b','A'):1, ('b','B'):5})
@@ -253,11 +253,10 @@ def matrix_matrix_mul(A, B):
     for row in Ard:
         outrv = {}
         for col in Bcd:
+            print(row, col)
             if Ard[row] * Bcd[col] != 0:
                 outrv[col] = Ard[row] * Bcd[col]
         outd[row] = Vec(B.D[1], outrv)
-
-    1 == 1
 
     return rowdict2mat(outd)
 
