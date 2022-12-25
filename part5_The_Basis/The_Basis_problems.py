@@ -1,6 +1,11 @@
 # version code 85d47a5a9f64+
 # Please fill out this stencil and submit using the provided submission script.
 
+import os, sys
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
 from GF2 import one
 from math import sqrt, pi
 from matutil import coldict2mat
@@ -161,10 +166,18 @@ def rep2vec(u, veclist):
         True
         >>> rep2vec(Vec({0,1,2}, {0:2, 1:4}), [v0, v1, v2]) == Vec({'d', 'a', 'c', 'b'},{'a': 6, 'c': 0, 'b': 8, 'd': 0})
         True
+        >>> u = list2vec([5,3,-2])
+        >>> veclist = [list2vec([1,0,2,0]),list2vec([1,2,5,1]),list2vec([1,5,-1,3])]
+        >>> (rep2vec(u, veclist) - Vec({0,1,2,3},{0: 6, 1: -4, 2: 27, 3: -3})).is_almost_zero()
+        True
+        >>> u = list2vec([one,one,0])
+        >>> veclist = [list2vec([one,0,one]),list2vec([one,one,0]),list2vec([0,0,one])]
+        >>> rep2vec(u, veclist) == Vec({0,1,2},{0: 0, 1: one, 2: one})
+        True
     '''
-    pass
 
-
+    assert len(u.D) == len(veclist)
+    return u * list2vec(veclist)
 
 ## 14: (Problem 5.14.14) vec2rep
 def vec2rep(veclist, v):
@@ -181,10 +194,16 @@ def vec2rep(veclist, v):
         >>> v = Vec({'d', 'a', 'c', 'b'},{'a': -1, 'c': 10, 'b': -1})
         >>> vec2rep([v0,v1,v2], v)  == Vec({0, 1, 2},{0: 1.5, 1: -0.25, 2: 1.25})
         True
+        >>> v = list2vec([6,-4,27,-3])
+        >>> veclist = [list2vec([1,0,2,0]),list2vec([1,2,5,1]),list2vec([1,5,-1,3])]
+        >>> (vec2rep(veclist, v) - Vec({0,1,2}, {0:5,1:3,2:-2})).is_almost_zero()
+        True
+        >>> v = list2vec([0,one,one])
+        >>> veclist = [list2vec([one,0,one]),list2vec([one,one,0]),list2vec([0,0,one])]
+        >>> vec2rep(veclist, v) == Vec({0,1,2},{0: one, 1: one, 2: 0})
+        True
     '''
-    pass
-
-
+    return solve(coldict2mat(veclist), v)
 
 ## 15: (Problem 5.14.15) Superfluous Vector in Python
 def is_superfluous(L, i):
@@ -212,10 +231,22 @@ def is_superfluous(L, i):
     True
     >>> is_superfluous([Vec({0,1}, {0:1})], 0)
     False
+    >>> L = [list2vec([1,2,3])]
+    >>> is_superfluous(L, 0)
+    False
+    >>> L = [list2vec([2,5,5,6]),list2vec([2,0,1,3]),list2vec([0,5,4,3])]
+    >>> is_superfluous(L, 2)
+    True
+    >>> L = [list2vec([one,one,0,0]),list2vec([one,one,one,one]),list2vec([0,0,0,one])]
+    >>> is_superfluous(L, 2)
+    False
     '''
-    pass
+    assert i in range(len(L))
 
-
+    if len(L) == 1:
+        return L[0] == Vec(L[0].D, {})
+    
+    return (L[i]-(coldict2mat(L[:i] + L[i+1:]) * solve(coldict2mat(L[:i] + L[i+1:]) , L[i]))).is_almost_zero()
 
 ## 16: (Problem 5.14.16) is_independent in Python
 def is_independent(L):
@@ -244,10 +275,20 @@ def is_independent(L):
         True
         >>> vlist == [Vec({0, 1, 2},{0: 1}), Vec({0, 1, 2},{1: 1}), Vec({0, 1, 2},{2: 1}), Vec({0, 1, 2},{0: 1, 1: 1, 2: 1}), Vec({0, 1, 2},{1: 1, 2: 1}), Vec({0, 1, 2},{0: 1, 1: 1})]
         True
+        >>> L = [list2vec([2,4,0]),list2vec([8,16,4]),list2vec([0,0,7])]
+        >>> is_independent(L)
+        False
+        >>> L = [list2vec([1,3,0,0]),list2vec([2,1,1,0]),list2vec([1,1,4,-1])]
+        >>> is_independent(L)
+        True
+        >>> L = [list2vec([one,0,one,0]),list2vec([0,one,0,0]),list2vec([one,0,0,one])]
+        >>> is_independent(L)
+        True
     '''
-    pass
-
-
+    for i in range(len(L)):
+        if is_superfluous(L, i):
+            return False
+    return True
 
 ## 17: (Problem 5.14.17) Subset Basis
 def subset_basis(T):
@@ -283,10 +324,29 @@ def subset_basis(T):
         True
         >>> all(is_superfluous([b]+sb, 0) for b in [b0, b1, b2, b3])
         True
+        >>> l = [list2vec([1,1,2,1]),list2vec([2,1,1,1]),list2vec([1,2,2,1]),list2vec([2,2,1,2]),list2vec([2,2,2,2])]
+        >>> sb = subset_basis(l)
+        >>> all(v in l for v in sb)
+        True
+        >>> is_independent(sb)
+        True
+        >>> all(is_superfluous([b]+sb, 0) for b in l)
+        True
+        >>> l = [list2vec([one,one,0,0]),list2vec([one,one,one,one]),list2vec([0,0,one,one]),list2vec([0,0,0,one]),list2vec([0,0,one,0])]
+        >>> sb = subset_basis(l)
+        >>> all(v in l for v in sb)
+        True
+        >>> is_independent(sb)
+        True
+        >>> all(is_superfluous([b]+sb, 0) for b in l)
+        True
     '''
-    pass
-
-
+    if is_independent(T):
+        return T
+    else:
+        for i in range(len(T)):
+            if is_superfluous(T, i):
+                return subset_basis(T[:i] + T[i+1:])
 
 ## 18: (Problem 5.14.18) Superset Basis Lemma in Python
 def superset_basis(T, L):
@@ -312,10 +372,49 @@ def superset_basis(T, L):
         True
         >>> all((not is_independent(sb+[x])) for x in [a0, a1, a2])
         True
+        >>> T = [list2vec([0,5,3]),list2vec([0,2,2]),list2vec([1,5,7])]
+        >>> L = [list2vec([1,1,1]),list2vec([0,1,1]),list2vec([0,0,1])]
+        >>> sb = superset_basis(T,L)
+        >>> all([x in sb for x in T])
+        True
+        >>> is_independent(sb)
+        True
+        >>> all(x in set(L).union(set(T)) for x in sb)
+        True
+        >>> all((not is_independent(sb+[x])) for x in L)
+        True
+        >>> T = [list2vec([0,5,3]),list2vec([0,2,2])]
+        >>> L = [list2vec([1,1,1]),list2vec([0,1,1]),list2vec([0,0,1])]
+        >>> sb = superset_basis(T,L)
+        >>> all([x in sb for x in T])
+        True
+        >>> is_independent(sb)
+        True
+        >>> all(x in set(L).union(set(T)) for x in sb)
+        True
+        >>> all((not is_independent(sb+[x])) for x in L)
+        True
+        >>> T = [list2vec([0,one,one,0]),list2vec([one,0,0,one])]
+        >>> L = [list2vec([one,one,one,one]),list2vec([one,0,0,0]),list2vec([0,0,0,one])]
+        >>> sb = superset_basis(T,L)
+        >>> all([x in sb for x in T])
+        True
+        >>> is_independent(sb)
+        True
+        >>> all(x in set(L).union(set(T)) for x in sb)
+        True
+        >>> all((not is_independent(sb+[x])) for x in L)
+        True
     '''
-    pass
+    assert is_independent(T)
 
+    for x in [x for x in T if x not in L]:
+        assert is_superfluous([x]+L, 0)
 
+    for x in [x for x in L if x not in T]:
+        T = T + [x for x in [x] if is_independent(T + [x])]
+
+    return T
 
 ## 19: (Problem 5.14.19) Exchange Lemma in Python
 def exchange(S, A, z):
@@ -331,6 +430,17 @@ def exchange(S, A, z):
         >>> z = list2vec([0,2,1,1])
         >>> exchange(S, A, z) == Vec({0, 1, 2, 3},{0: 0, 1: 0, 2: 1, 3: 0})
         True
+        >>> S = [list2vec(v) for v in [[0,one,one,one],[one,0,one,one],[one,one,0,one],[one,one,one,0]]]
+        >>> A = [list2vec(v) for v in [[0,one,one,one],[one,one,0,one]]]
+        >>> z = list2vec([one,one,one,one])
+        >>> exchange(S, A, z) == Vec({0, 1, 2, 3},{0: one, 1: 0, 2: one, 3: one}) or Vec({0, 1, 2, 3},{0: one, 1: one, 2: one, 3: 0})
+        True
     '''
-    pass
+    for v in A:
+        assert v in S
 
+    assert is_independent(A+[z])
+
+    for w in [w for w in S if w not in A]:
+        if is_superfluous([w]+S+[z], 0):
+            return w
