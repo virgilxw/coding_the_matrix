@@ -241,12 +241,13 @@ def is_superfluous(L, i):
     >>> is_superfluous(L, 2)
     False
     '''
-    assert i in range(len(L))
 
     if len(L) == 1:
-        return L[0] == Vec(L[0].D, {})
+        return False or len(L[i].f) == 0
     
-    return (L[i]-(coldict2mat(L[:i] + L[i+1:]) * solve(coldict2mat(L[:i] + L[i+1:]) , L[i]))).is_almost_zero()
+    A = coldict2mat([vec for vec in L if vec != L[i]])
+
+    return (L[i]- A * solve(A , L[i])).is_almost_zero()
 
 ## 16: (Problem 5.14.16) is_independent in Python
 def is_independent(L):
@@ -436,10 +437,6 @@ def exchange(S, A, z):
         >>> exchange(S, A, z) == Vec({0, 1, 2, 3},{0: one, 1: 0, 2: one, 3: one}) or Vec({0, 1, 2, 3},{0: one, 1: one, 2: one, 3: 0})
         True
     '''
-    for v in A:
-        assert v in S
-
-    assert is_independent(A+[z])
 
     for w in [w for w in S if w not in A]:
         if is_superfluous([w]+S+[z], 0):

@@ -253,7 +253,6 @@ def matrix_matrix_mul(A, B):
     for row in Ard:
         outrv = {}
         for col in Bcd:
-            print(row, col)
             if Ard[row] * Bcd[col] != 0:
                 outrv[col] = Ard[row] * Bcd[col]
         outd[row] = Vec(B.D[1], outrv)
